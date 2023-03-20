@@ -32,11 +32,7 @@ def update_args_with_env_info(args):
     with open_dict(args):
         slurm_id = os.getenv('SLURM_JOB_ID')
 
-        if slurm_id is not None:
-            args.slurm_id = slurm_id
-        else:
-            args.slurm_id = 'none'
-
+        args.slurm_id = slurm_id if slurm_id is not None else 'none'
         args.working_dir = os.getcwd()
 
 
@@ -56,6 +52,4 @@ def setup_basics(accelerator, args):
     if args.seed is not None:
         set_seed(args.seed)
 
-    logger = Logger(args=args, accelerator=accelerator)
-
-    return logger
+    return Logger(args=args, accelerator=accelerator)

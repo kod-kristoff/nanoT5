@@ -177,9 +177,9 @@ def get_dataloaders(tokenizer, config, args):
         shuffle = (split == 'train') and not is_iterable
 
         if args.mode == 'ft' and split == 'train':
-            assert shuffle is True
+            assert shuffle
         else:
-            assert shuffle is False
+            assert not shuffle
 
         dataloaders[split] = DataLoader(
             dataset[split],
@@ -212,11 +212,19 @@ def get_optimizer(model, args):
 
     optimizer_grouped_parameters = [
         {
-            "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+            "params": [
+                p
+                for n, p in model.named_parameters()
+                if all(nd not in n for nd in no_decay)
+            ],
             "weight_decay": args.optim.weight_decay,
         },
         {
-            "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
+            "params": [
+                p
+                for n, p in model.named_parameters()
+                if any(nd in n for nd in no_decay)
+            ],
             "weight_decay": 0.0,
         },
     ]
