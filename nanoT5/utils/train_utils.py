@@ -68,10 +68,7 @@ def maybe_grad_clip_and_grad_calc(accelerator, model, args):
             norm_type=2,
         )
 
-    if grad_l2 is not None:
-        return {'grad_l2': grad_l2}
-    else:
-        return {}
+    return {'grad_l2': grad_l2} if grad_l2 is not None else {}
 
 
 def extra_stats(args, model, optimizer):
@@ -91,9 +88,7 @@ def forward(model, batch, calc_acc=False):
     outputs = model(**batch)
     loss = outputs.loss
 
-    stats = {}
-    stats['loss'] = loss.detach().float().item()
-
+    stats = {'loss': loss.detach().float().item()}
     if calc_acc:
         correct = (outputs.logits.argmax(-1) == batch["labels"]).sum().item()
         accuracy = correct / batch["labels"].numel()

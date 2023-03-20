@@ -147,7 +147,7 @@ class NaturalInstructions(datasets.GeneratorBasedBuilder):
         with open(path, encoding="utf-8") as split_f:
             for line in split_f:
                 task_name = line.strip()
-                task_path = os.path.join(task_dir, task_name + ".json")
+                task_path = os.path.join(task_dir, f"{task_name}.json")
                 with open(task_path, encoding="utf-8") as task_f:
                     s = task_f.read()
                     task_data = json.loads(s)
@@ -155,13 +155,7 @@ class NaturalInstructions(datasets.GeneratorBasedBuilder):
                     if "Instruction Source" in task_data:
                         task_data.pop("Instruction Source")
                     all_instances = task_data.pop("Instances")
-                    if subset == "test":
-                        # for testing tasks, 100 instances are selected for efficient evaluation and they are label-balanced.
-                        # we put them in the first for reproducibility.
-                        # so, we use them here
-                        instances = all_instances[:100]
-                    else:
-                        instances = all_instances
+                    instances = all_instances[:100] if subset == "test" else all_instances
                     if max_num_instances_per_task is not None and max_num_instances_per_task >= 0:
                         random.shuffle(instances)
                         instances = instances[:max_num_instances_per_task]

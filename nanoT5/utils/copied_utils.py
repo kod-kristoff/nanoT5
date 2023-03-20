@@ -60,7 +60,7 @@ class DataCollatorForT5MLM:
         mask_indices = np.asarray(
             [
                 self.random_spans_noise_mask(expandend_input_length)
-                for i in range(batch_size)
+                for _ in range(batch_size)
             ]
         )
         labels_mask = ~mask_indices
@@ -280,7 +280,7 @@ class AdamWScale(Optimizer):
             raise ValueError(f"Invalid beta parameter: {betas[0]} - should be in [0.0, 1.0)")
         if not 0.0 <= betas[1] < 1.0:
             raise ValueError(f"Invalid beta parameter: {betas[1]} - should be in [0.0, 1.0)")
-        if not 0.0 <= eps:
+        if eps < 0.0:
             raise ValueError(f"Invalid epsilon value: {eps} - should be >= 0.0")
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, correct_bias=correct_bias)
         super().__init__(params, defaults)
@@ -296,10 +296,7 @@ class AdamWScale(Optimizer):
         Arguments:
             closure (`Callable`, *optional*): A closure that reevaluates the model and returns the loss.
         """
-        loss = None
-        if closure is not None:
-            loss = closure()
-
+        loss = closure() if closure is not None else None
         for group in self.param_groups:
             for p in group["params"]:
                 if p.grad is None:
@@ -369,9 +366,7 @@ def tokenize_function(examples, tokenizer, in_length):
     total_length = (total_length // in_length) * in_length
 
     concatenated_ids = concatenated_ids[:total_length].reshape(-1, in_length)
-    result = {"input_ids": concatenated_ids}
-
-    return result
+    return {"input_ids": concatenated_ids}
 
 
 from transformers.data.data_collator import *
@@ -455,11 +450,9 @@ class DataCollatorForNI:
                 num_neg_examples = self.num_neg_examples
                 add_explanation = self.add_explanation
 
-            task_input = ""
-            # add the input first.
-            task_input += "Now complete the following example -\n"
+            task_input = "" + "Now complete the following example -\n"
             task_input += f"Input: {instance['Instance']['input'].strip()}"
-            if not task_input[-1] in string.punctuation:
+            if task_input[-1] not in string.punctuation:
                 task_input += "."
             task_input += "\n"
             task_input += "Output: "
@@ -476,7 +469,7 @@ class DataCollatorForNI:
                     )
                 else:
                     definition = "Definition: " + instance["Definition"].strip()
-                if not definition[-1] in string.punctuation:
+                if definition[-1] not in string.punctuation:
                     definition += "."
                 definition += "\n\n"
 
@@ -487,18 +480,18 @@ class DataCollatorForNI:
             ):
                 pos_example_str = f" Positive Example {idx+1} -\n"
                 pos_example_str += f"Input: {pos_example['input'].strip()}"
-                if not pos_example_str[-1] in string.punctuation:
+                if pos_example_str[-1] not in string.punctuation:
                     pos_example_str += "."
                 pos_example_str += "\n"
                 pos_example_str += f" Output: {pos_example['output'].strip()}"
-                if not pos_example_str[-1] in string.punctuation:
+                if pos_example_str[-1] not in string.punctuation:
                     pos_example_str += "."
                 pos_example_str += "\n"
                 if add_explanation and "explanation" in pos_example:
                     pos_example_str += (
                         f" Explanation: {pos_example['explanation'].strip()}"
                     )
-                    if not pos_example_str[-1] in string.punctuation:
+                    if pos_example_str[-1] not in string.punctuation:
                         pos_example_str += "."
                     pos_example_str += "\n"
                 pos_example_str += "\n"
@@ -524,18 +517,18 @@ class DataCollatorForNI:
             ):
                 neg_example_str = f" Negative Example {idx+1} -\n"
                 neg_example_str += f"Input: {neg_example['input'].strip()}"
-                if not neg_example_str[-1] in string.punctuation:
+                if neg_example_str[-1] not in string.punctuation:
                     neg_example_str += "."
                 neg_example_str += "\n"
                 neg_example_str += f" Output: {neg_example['output'].strip()}"
-                if not neg_example_str[-1] in string.punctuation:
+                if neg_example_str[-1] not in string.punctuation:
                     neg_example_str += "."
                 neg_example_str += "\n"
                 if add_explanation and "explanation" in neg_example:
                     neg_example_str += (
                         f" Explanation: {neg_example['explanation'].strip()}"
                     )
-                    if not neg_example_str[-1] in string.punctuation:
+                    if neg_example_str[-1] not in string.punctuation:
                         neg_example_str += "."
                     neg_example_str += "\n"
                 neg_example_str += "\n"
